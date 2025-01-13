@@ -14,7 +14,7 @@ def init_db():
     conn.close()
 
 def clock_in(time=None):
-    conn = sqlite3.connect('timetrack.db')
+    conn = sqlite3.connect('timesheet.db')
     c = conn.cursor()
     
     # Check if there's an open entry
@@ -41,7 +41,7 @@ def clock_in(time=None):
     print(f"Clocked in at {time}")
 
 def clock_out(time=None):
-    conn = sqlite3.connect('timetrack.db')
+    conn = sqlite3.connect('timesheet.db')
     c = conn.cursor()
     
     # Find the open entry
@@ -64,7 +64,7 @@ def format_duration(seconds):
     return f"{hours}h {minutes}m"
 
 def get_time_today():
-    conn = sqlite3.connect('timetrack.db')
+    conn = sqlite3.connect('timesheet.db')
     c = conn.cursor()
     today = datetime.now().strftime('%Y-%m-%d')
     current_time = datetime.now()
@@ -89,14 +89,24 @@ def get_time_today():
         ongoing_seconds = (current_time - start).total_seconds()
         total_seconds += ongoing_seconds
         ongoing_time = format_duration(int(ongoing_seconds))
-        conn.close()
-        return f"{format_duration(int(total_seconds))} (including {ongoing_time} from current session)"
+        
+        # Calculate estimated finish time (8 hour workday)
+        seconds_remaining = (8 * 3600) - total_seconds
+        if seconds_remaining > 0:
+            finish_time = current_time + timedelta(seconds=seconds_remaining)
+            finish_time_str = finish_time.strftime('%I:%M %p')
+            conn.close()
+            return f"{format_duration(int(total_seconds))} (including {ongoing_time} from current session) - Estimated finish time: {finish_time_str}"
+        else:
+            overtime = format_duration(int(-seconds_remaining))
+            conn.close()
+            return f"{format_duration(int(total_seconds))} (including {ongoing_time} from current session) - {overtime} over 8 hours"
     
     conn.close()
     return format_duration(int(total_seconds))
 
 def get_time_week():
-    conn = sqlite3.connect('timetrack.db')
+    conn = sqlite3.connect('timesheet.db')
     c = conn.cursor()
     today = datetime.now()
     week_start = (today - timedelta(days=today.weekday())).strftime('%Y-%m-%d')
@@ -118,7 +128,7 @@ def show_help():
 TimeTrack - Simple Time Tracking CLI
 
 Usage:
-    ./timetrack.py <command> [datetime]
+    ./timesheet.py <command> [datetime]
 
 Commands:
     in      Clock in (start tracking time)
@@ -133,10 +143,10 @@ Options:
                 If not provided, current local time will be used
 
 Examples:
-    ./timetrack.py in                         # Clock in now
-    ./timetrack.py out                        # Clock out now
-    ./timetrack.py in "2025-01-13 08:56:00"  # Clock in at specific time
-    ./timetrack.py today                      # Show today's total time
+    ./timesheet.py in                         # Clock in now
+    ./timesheet.py out                        # Clock out now
+    ./timesheet.py in "2025-01-13 08:56:00"  # Clock in at specific time
+    ./timesheet.py today                      # Show today's total time
     """
     print(help_text)
 
