@@ -109,8 +109,10 @@ def get_time_week():
     conn = sqlite3.connect('timesheet.db')
     c = conn.cursor()
     today = datetime.now()
+    current_time = datetime.now()
     week_start = (today - timedelta(days=today.weekday())).strftime('%Y-%m-%d')
     
+    # Get completed sessions for the week
     c.execute('''SELECT clock_in, clock_out FROM time_entries 
                  WHERE date(clock_in) >= ? AND clock_out IS NOT NULL''', (week_start,))
     
@@ -119,6 +121,19 @@ def get_time_week():
         start = datetime.strptime(clock_in, '%Y-%m-%d %H:%M:%S')
         end = datetime.strptime(clock_out, '%Y-%m-%d %H:%M:%S')
         total_seconds += (end - start).total_seconds()
+    
+    # Check for open session
+    c.execute('''SELECT clock_in FROM time_entries 
+                 WHERE date(clock_in) >= ? AND clock_out IS NULL''', (week_start,))
+    open_session = c.fetchone()
+    
+    if open_session:
+        start = datetime.strptime(open_session[0], '%Y-%m-%d %H:%M:%S')
+        ongoing_seconds = (current_time - start).total_seconds()
+        total_seconds += ongoing_seconds
+        ongoing_time = format_duration(int(ongoing_seconds))
+        conn.close()
+        return f"{format_duration(int(total_seconds))} (including {ongoing_time} from current session)"
     
     conn.close()
     return format_duration(int(total_seconds))
@@ -154,7 +169,7 @@ def main():
     init_db()
     
     if len(sys.argv) < 2 or sys.argv[1] in ['-h', '--help']:
-        show_help()
+        print(f"Time worked today: {get_time_today()}")
         return
 
     command = sys.argv[1]
@@ -171,7 +186,7 @@ def main():
     elif command == "week":
         print(f"Time worked this week: {get_time_week()}")
     else:
-        print("Invalid command. Use: in, out, today, or week")
+        print("Invalid command. Use: in, out, time, today, or week")
 
 if __name__ == "__main__":
     main()
