@@ -15,7 +15,7 @@ fi
 chmod +x timesheet
 
 # Move the script to bin directory
-cp timesheet "/bin/timesheet"
+cp timesheet "/usr/local/bin/timesheet"
 
 # Verify installation
 if [ -x "/bin/timesheet" ]; then
