@@ -6,16 +6,16 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Check if timesheet script exists
-if [ ! -f "timesheet.py" ]; then
-    echo -e "${RED}Error: timesheet.py not found in current directory${NC}"
+if [ ! -f "timesheet" ]; then
+    echo -e "${RED}Error: timesheet not found in current directory${NC}"
     exit 1
 fi
 
 # Make the script executable
-chmod +x timesheet.py
+chmod +x timesheet
 
 # Move the script to bin directory
-cp timesheet.py "/bin/timesheet"
+ln timesheet "/bin/timesheet"
 
 # Verify installation
 if [ -x "/bin/timesheet" ]; then
