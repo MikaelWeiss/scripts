@@ -1,10 +1,23 @@
 #!/usr/bin/env python3
 import sqlite3
 import sys
+import os
 from datetime import datetime, timedelta
+from pathlib import Path
+
+def get_db_path():
+    # Get the user's home directory and construct the path
+    data_dir = Path.home() / '.local' / 'share' / 'timesheet'
+    
+    # Create the directory if it doesn't exist
+    data_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Return the full path to the database file
+    return data_dir / 'timesheet.db'
 
 def init_db():
-    conn = sqlite3.connect('timesheet.db')
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS time_entries
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,7 +27,7 @@ def init_db():
     conn.close()
 
 def clock_in(time=None):
-    conn = sqlite3.connect('timesheet.db')
+    conn = sqlite3.connect(get_db_path())
     c = conn.cursor()
     
     # Check if there's an open entry
@@ -41,7 +54,7 @@ def clock_in(time=None):
     print(f"Clocked in at {time}")
 
 def clock_out(time=None):
-    conn = sqlite3.connect('timesheet.db')
+    conn = sqlite3.connect(get_db_path())
     c = conn.cursor()
     
     # Find the open entry
@@ -64,7 +77,7 @@ def format_duration(seconds):
     return f"{hours}h {minutes}m"
 
 def get_time_today():
-    conn = sqlite3.connect('timesheet.db')
+    conn = sqlite3.connect(get_db_path())
     c = conn.cursor()
     today = datetime.now().strftime('%Y-%m-%d')
     current_time = datetime.now()
@@ -106,7 +119,7 @@ def get_time_today():
     return format_duration(int(total_seconds))
 
 def get_time_week():
-    conn = sqlite3.connect('timesheet.db')
+    conn = sqlite3.connect(get_db_path())
     c = conn.cursor()
     today = datetime.now()
     current_time = datetime.now()
