@@ -149,8 +149,10 @@ Commands:
     in      Clock in (start tracking time)
     out     Clock out (stop tracking time)
     today   Show total time worked today
+    day     Show total time worked today
     week    Show total time worked this week
     --help  Show this help message
+    If no input is given the time worked today will show
 
 Options:
     datetime    Optional datetime string (format: "YYYY-MM-DD HH:MM:SS")
@@ -181,6 +183,8 @@ def main():
         print(f"Time worked today: {get_time_today()}")
     elif command == "out":
         clock_out(time)
+    elif command == "day":
+        print(f"Time worked today: {get_time_today()}")
     elif command == "today":
         print(f"Time worked today: {get_time_today()}")
     elif command == "week":
