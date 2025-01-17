@@ -18,7 +18,7 @@ chmod +x timesheet
 cp timesheet "/usr/local/bin/timesheet"
 
 # Verify installation
-if [ -x "/bin/timesheet" ]; then
+if [ -x "/usr/local/bin/timesheet" ]; then
     echo -e "${GREEN}Installation successful!${NC}"
     echo -e "${GREEN}You can now run 'timesheet' from anywhere${NC}"
 else
